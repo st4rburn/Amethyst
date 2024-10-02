@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ConditionState } from './ConditionsInput.vue';
 
 // Check if a string contains a character in chars
 function contains_one_of(text: string, chars: string): boolean {
@@ -42,6 +42,43 @@ const password_conditions = [
   { text: 'Contains at least one symbol (!@#$%, etc.)', condition: (data: string) => {
     return contains_more_than(data, alphanumeric);
   }},
+  {
+    text: 'Not included in data breaches',
+    condition: (data: string, callback: (answer: ConditionState) => void) => {
+      const enc = new TextEncoder();
+      crypto.subtle.digest("SHA-1", enc.encode(data)).then((hash: ArrayBuffer) => {
+        const hex = Array.from(new Uint8Array(hash))
+          .map(v => v.toString(16).padStart(2, '0'))
+          .join('')
+          .toUpperCase(); // The API works in uppercase
+        axios.get("https://api.pwnedpasswords.com/range/" + hex.substring(0, 5)).then((res) => {
+          const hashes = (res.data as string).split('\r\n'); // The API also works in Windows line endings
+          const tail = hex.substring(5);
+          for (let potential of hashes) {
+            const parts = potential.split(':');
+            if (parts[0] === tail) {
+              if (parts[1] !== "0") {
+                callback(ConditionState.Unfulfilled);
+                // Why not
+                console.log("Fyi, that password appeared in " + parts[1] + " data breaches.");
+                return;
+              }
+            }
+          }
+          callback(ConditionState.Fulfilled);
+          // Loop through, if the password is there and in a breach, callback with true
+        }).catch((e: any) => {
+          callback(ConditionState.Error);
+          console.log(e);
+        })
+      }).catch((e: any) => {
+        callback(ConditionState.Error);
+        console.log(e);
+      });
+    },
+    callback: true,
+    deps: [0, 1, 2, 3]
+  },
 ];
 const confirm_conditions = [
   { text: 'Matches password', condition: (data: string) => {

@@ -36,6 +36,8 @@
   --red-dark: hsla(0, 80%, 40%, 1);
   --green: hsla(120, 90%, 45%, 1);
   --green-dark: hsla(120, 80%, 35%, 1);
+  --amber: hsla(45, 90%, 50%, 1);
+  --amber-dark: hsla(45, 90%, 40%, 1);
 }
 
 /* semantic color variables for this project */
