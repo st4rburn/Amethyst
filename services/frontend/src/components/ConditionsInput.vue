@@ -1,5 +1,14 @@
 <script setup lang="ts">
 defineProps(['name', 'type', 'label', 'conditions', 'desc'])
+
+type Condition = {
+    text: string,
+    //condition: ((data: string) => boolean) | ((data: string, callback: (answer: ConditionState) => void) => void),
+    condition: Function,
+    state: ConditionState,
+    callback: boolean,
+    deps: number[],
+};
 </script>
 
 <template>
@@ -15,11 +24,11 @@ defineProps(['name', 'type', 'label', 'conditions', 'desc'])
             </li>
         </ul>
     </div>
-    <label :for="name">{{ label }} <i v-if="desc">{{ desc }}</i></label><input :id="name + '-field'" :name="name" required :type="type" @input="check" @focus="validation_info" @blur="validation_info">
+    <label :for="name">{{ label }} <i v-if="desc">{{ desc }}</i></label><input :id="name + '-field'" :name="name" required :type="type" @input="check" @focus="unhide" @blur="hide">
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, getCurrentInstance } from 'vue';
 import clock_svg from '@/assets/clock.svg?raw';
 import cross_svg from '@/assets/cross.svg?raw';
 import error_svg from '@/assets/error.svg?raw';
@@ -75,7 +84,7 @@ export default defineComponent({
             this.update_whole();
         },
 
-        update_whole() {
+        update_whole(): boolean {
             let result = true;
             let pending = true;
             for (let condition of this.items) {
@@ -88,19 +97,21 @@ export default defineComponent({
             }
             this.complete = result;
             this.pending = this.complete ? false : pending;
-        },
-
-        validation_info(e: FocusEvent) {
-            if (e.type === "focus") {
-                this.hidden = false;
-            } else {
+            if (this.hidden) {
                 this.hidden = this.complete;
             }
+            return this.complete;
+        },
+        hide() {
+            this.hidden = this.complete;
+        },
+        unhide() {
+            this.hidden = false;
         }
     },
 
     data() {
-        let items = [];
+        let items: Condition[] = [];
         for (let item of this.conditions) {
             items.push({
                 text: item.text,
@@ -119,6 +130,15 @@ export default defineComponent({
             tick_svg,
         };
     },
+
+    created() {
+        let inst = getCurrentInstance();
+        if (inst !== null && inst.exposed !== null) {
+            inst.exposed.check_whole = this.update_whole;
+        } else {
+            console.error("Could not get current instance.");
+        }
+    }
 });
 </script>
 

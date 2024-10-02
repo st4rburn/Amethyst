@@ -90,6 +90,11 @@ const confirm_conditions = [
 <script lang="ts">
 import axios from 'axios';
 import ConditionsInput from './ConditionsInput.vue';
+import type { Ref } from 'vue';
+
+interface IConditionsInput {
+  check_whole(): boolean;
+}
 
 export default {
   name: 'RegisterForm',
@@ -100,6 +105,17 @@ export default {
   },
   methods: {
     submit(e: Event): void {
+      // Stop page unloading
+      e.preventDefault();
+      // Check that all fields are filled in correctly
+      const username_result = (this.$refs.username as IConditionsInput).check_whole();
+      const password_result = (this.$refs.password as IConditionsInput).check_whole();
+      const confirm_result = (this.$refs.confirm as IConditionsInput).check_whole();
+      if (!username_result || !password_result || !confirm_result) {
+        // Cancel and wait for correct input. This will also show the user what they did wrong
+        return;
+      }
+
       // API call to log in, what data do we return?
       // Navigate to challenges if successful
       alert("Test alert for now.");
@@ -110,9 +126,7 @@ export default {
         .catch((error: any) => {
           console.error(error);
         });
-      e.preventDefault();
     },
-
   },
 };
 </script>
@@ -120,16 +134,16 @@ export default {
 
 <template>
   <form method="POST" @submit="submit">
-    <ConditionsInput name="username" type="text" label="Username" :conditions="username_conditions" desc="(will be visible)"/>
+    <ConditionsInput ref="username" name="username" type="text" label="Username" :conditions="username_conditions" desc="(will be visible)"/>
     <br>
     <br>
-    <label for="email">Email <i>(shared with no one)</i></label><input id="email" name="email" required type="email">
+    <label for="email">Email <i>(shared with no one)</i></label><input ref="email" id="email" name="email" required type="email">
     <br>
     <br>
-    <ConditionsInput name="password" type="password" label="Password" :conditions="password_conditions"/>
+    <ConditionsInput ref="password" name="password" type="password" label="Password" :conditions="password_conditions"/>
     <br>
     <br>
-    <ConditionsInput name="confirm" type="password" label="Confirm Password" :conditions="confirm_conditions"/>
+    <ConditionsInput ref="confirm" name="confirm" type="password" label="Confirm Password" :conditions="confirm_conditions"/>
     <br>
     <br>
     <br>
