@@ -10,6 +10,9 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
+# Install packages
+RUN npm install
+
 # Basic setup
 COPY index.html .
 COPY env.d.ts .
@@ -19,9 +22,6 @@ COPY vite*.config.ts .
 # Public folder + source
 COPY public/ ./public
 COPY src/ ./src
-
-# Install packages
-RUN npm install
 
 # Last two arguments pass --host to Vite, as app must
 # be accessible outside of localhost for Docker

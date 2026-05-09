@@ -3,9 +3,7 @@
 
 services:
   backend:
-    build:
-      context: ./services/backend
-      dockerfile: ./dev.dockerfile
+    image: aurillium/amethyst-backend
     environment:
       DB_USERNAME: ${DB_USER}
       DB_HOST: database
@@ -16,31 +14,19 @@ services:
       RSS_LINK: "https://amethyst.aurillium.space/devlog"
       RSS_DESCRIPTION: "A CTF!"
       RECOVERY_TOKEN: ${RECOVERY_TOKEN}
-    volumes:
-      # Remove in prod
-      - "./services/backend/src:/app"
     depends_on:
       - database
 
   frontend:
-    build:
-      context: ./services/frontend
-      dockerfile: ./dev.dockerfile
-    volumes:
-      - "/app/node_modules"
-      # Remove in prod
-      - ./services/frontend:/app
-
-  proxy:
-    image: nginx:1.29-alpine-slim
+    image: aurillium/amethyst-frontend
+    environment:
+      BACKEND_URI: "http://backend:8000/"
     ports:
-      - 8080:80
+      - 8080:8000
     volumes:
-      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
       - ./devlog_assets:/var/www/html/devlog_assets
     depends_on:
       - backend
-      - frontend
 
   # Ensure this encrypts at rest
   database:

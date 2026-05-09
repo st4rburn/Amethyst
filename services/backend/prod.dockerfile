@@ -6,10 +6,6 @@ WORKDIR /app
 ENV PATH="${PATH}:/root/.local/bin"
 ENV PYTHONPATH=.
 
-#RUN apt-get update &&\
-#    apt-get install --no-install-recommends -y libpq-dev=15.8-0+deb12u1 &&\
-#    rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

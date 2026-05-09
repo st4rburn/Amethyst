@@ -1,0 +1,27 @@
+[[log]]
+title = "Getting Back Into It"
+content = '''
+<p>Hello! It has been a while for sure. Amethyst CTF is not dead, there's just been a lot that prevented much from happening with it, some highlights including:</p>
+<ul>
+  <li>This much exposition is hard to get into most formats of CTF challenge, which led to</li>
+  <li>Me being rather unskilled at what I had to make to fix this issue, and</li>
+  <li>Having to make something relatively complex but still easy to solve, all while</li>
+  <li>Having a fairly disasterous living situation and</li>
+  <li>Life™ in general.</li>
+</ul>
+<p>But now there is a lot of groundwork being done that should hopefully speed things up when I do get back to releasing challenges.
+Including this website! It's all still a massive work in progress and you may not see much for a while but the purpose of this message is
+to say this has not been forgotten, for good reason you just haven't seen many of the disasters I have created in trying to learn new skills
+and tell the story. As of now we have a working database and some API paths for the site, plus data models for everything so it's just going
+to be a case of put it all together over a long time, plus challenges will be released in the meantime where they don't need the more advanced
+features of the platform. It's been a long year but I hope I'm able to put some more focus on this now.</p>
+<br>
+<p>Pixel art!</p>
+<img height=250 src="/devlog/assets/fun.png">
+<p>Relevant</p>
+<img height=250 src="/devlog/assets/meme.jpg">
+<br>
+<p>Anyway, I've been more and more excited to get back to this over the last little while and want to tell the story, it's just going to take
+some time. And hopefully then it will come out to be something nice.</p>
+'''
+published = 2026-05-09T09:53:00Z

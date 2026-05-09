@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, BLOB, LargeBinary, JSON, Enum, UniqueConstraint
 from sqlalchemy.orm import declarative_base, Mapped
+from sqlmodel import Field, SQLModel
 from typing import *
 import enum
 import slugify
@@ -33,13 +34,24 @@ class ChallengeType(enum.Flag):
 # TODO: slugify titles on init
 
 def new_machine_expiry():
-    return datetime.datetime.now() + DEFAULT_MACHINE_EXPIRY
+    return datetime.now() + DEFAULT_MACHINE_EXPIRY
 
 def new_id():
     # There won't be enough objects in any table for this to remotely become a problem
     return uuid.uuid4().bytes[:8]
 
 Base = declarative_base()
+
+# Devlog stuff, can sit by itself
+class DevlogEntry(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    title: str
+    content: str
+    published: datetime
+
+    @property
+    def guid(self) -> str:
+        return self.title.lower().replace(" ", "-") + "_" + self.published.strftime("%Y-%m-%d")
 
 # For anything in lists SQL: CREATE UNIQUE INDEX unique_list_position ON list_items (list_id, position);
 # Ensures each position in a list is unique
@@ -90,8 +102,8 @@ class Episode(Base):
     description: Mapped[str]    = Column(String(2048),  nullable=False)
     position: Mapped[int]       = Column(Integer,       nullable=False)
 
-    release_date: Mapped[datetime.datetime] = Column(DateTime,  default=datetime.now,       nullable=False)
-    season_id: Mapped[bytes]                = Column(BLOB(8),   ForeignKey("seasons.id"),   nullable=False)
+    release_date: Mapped[datetime] = Column(DateTime,  default=datetime.now,       nullable=False)
+    season_id: Mapped[bytes]       = Column(BLOB(8),   ForeignKey("seasons.id"),   nullable=False)
 
     __table_args__ = (
         # Adding this constraint makes it possible to address by <base>/season/episode
@@ -125,11 +137,11 @@ class User(Base):
 class UserChallenge(Base):
     __tablename__ = "user_challenges"
 
-    user_id: Mapped[bytes]                      = Column(BLOB(8),   ForeignKey("users.id"), primary_key=True)
-    challenge_id: Mapped[bytes]                 = Column(BLOB(8),   ForeignKey("challenges.id"), primary_key=True)
-    solve_date: Mapped[datetime.datetime]       = Column(DateTime,  default=datetime.now)
-    machine: Mapped[bytes]                      = Column(BLOB(8),   ForeignKey("machines.id"))
-    machine_expires: Mapped[datetime.datetime]  = Column(DateTime,  default=datetime.now)
+    user_id: Mapped[bytes]             = Column(BLOB(8),   ForeignKey("users.id"), primary_key=True)
+    challenge_id: Mapped[bytes]        = Column(BLOB(8),   ForeignKey("challenges.id"), primary_key=True)
+    solve_date: Mapped[datetime]       = Column(DateTime,  default=datetime.now)
+    machine: Mapped[bytes]             = Column(BLOB(8),   ForeignKey("machines.id"))
+    machine_expires: Mapped[datetime]  = Column(DateTime,  default=datetime.now)
 
 
 # TODO: Make images table
@@ -152,3 +164,6 @@ class Machine(Base):
     machine_id: Mapped[bytes]   = Column(BLOB(8),   primary_key=True, default=new_id)
     owner: Mapped[bytes]        = Column(BLOB(8),   ForeignKey("users.id"))
     environment: Mapped[dict]   = Column(JSON,      nullable=False)
+
+def db_setup(engine) -> None:
+    SQLModel.metadata.create_all(engine, tables=[DevlogEntry.__table__])

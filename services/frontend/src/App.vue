@@ -4,16 +4,17 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-    <header>
-      <h1 class="purple">Amethyst</h1>
-    </header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/challenges">Challenges</RouterLink>
-        <RouterLink to="/login">Log In</RouterLink>
-      </nav>
-    </div>
+  <header>
+    <h1 class="purple">Amethyst</h1>
+  </header>
+  <div class="wrapper">
+    <nav>
+      <RouterLink to="/">Home</RouterLink>
+      <RouterLink to="/challenges">Challenges</RouterLink>
+      <RouterLink to="/login">Login</RouterLink>
+      <RouterLink to="/devlog">Devlog</RouterLink>
+    </nav>
+  </div>
 
   <RouterView />
 </template>
@@ -22,7 +23,7 @@ import HelloWorld from './components/HelloWorld.vue'
 header > h1 {
   text-align: center;
   font-size: 72px;
-  font-family: "Sixtyfour", system-ui;
+  font-family: 'Sixtyfour', system-ui;
 }
 
 header {
@@ -44,7 +45,6 @@ nav {
   margin-bottom: 1.5rem;
 }
 
-
 nav a {
   color: var(--color-text);
 }
@@ -58,7 +58,7 @@ nav a.router-link-exact-active:hover {
 }
 
 nav a {
-  font-family: "Exo 2", sans-serif;
+  font-family: 'Exo 2', sans-serif;
   display: inline-block;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);

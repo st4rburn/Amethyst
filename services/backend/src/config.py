@@ -1,3 +1,3 @@
-import datetime
+from datetime import timedelta
 
-DEFAULT_MACHINE_EXPIRY: datetime.timedelta = datetime.timedelta(minutes=15)
+DEFAULT_MACHINE_EXPIRY: timedelta = timedelta(minutes=15)
