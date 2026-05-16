@@ -5,6 +5,7 @@ WORKDIR /app
 
 ENV PATH="${PATH}:/root/.local/bin"
 ENV PYTHONPATH=.
+ENV NO_CONFIG_FILE=
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

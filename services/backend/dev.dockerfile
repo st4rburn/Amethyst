@@ -5,6 +5,7 @@ WORKDIR /app
 
 ENV PATH="${PATH}:/root/.local/bin"
 ENV PYTHONPATH=.
+ENV NO_CONFIG_FILE=
 
 #RUN apt-get update &&\
 #    apt-get install --no-install-recommends -y libpq-dev=15.8-0+deb12u1 &&\

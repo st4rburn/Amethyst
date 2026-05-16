@@ -2,39 +2,40 @@
 # Consider secrets? https://docs.docker.com/compose/use-secrets/
 
 services:
-  backend:
-    image: aurillium/amethyst-backend
-    environment:
-      DB_USERNAME: ${DB_USER}
-      DB_HOST: database
-      DB_NAME: ${DB_NAME}
-      DB_PASSWORD: ${DB_PASS}
-      DB_PORT: 5432
-      RSS_TITLE: "Amethyst CTF"
-      RSS_LINK: "https://amethyst.aurillium.space/devlog"
-      RSS_DESCRIPTION: "A CTF!"
-      RECOVERY_TOKEN: ${RECOVERY_TOKEN}
-    depends_on:
-      - database
+    backend:
+        image: aurillium/amethyst-backend
+        environment:
+            DB__USERNAME: ${DB_USER}
+            DB__HOST: database
+            DB__DATABASE: ${DB_NAME}
+            DB__PASSWORD: ${DB_PASS}
+            DB__PORT: 5432
+            RSS__TITLE: "Amethyst CTF"
+            RSS__LINK: "https://amethyst.aurillium.space/devlog"
+            RSS__DESCRIPTION: "A CTF!"
+            API__RECOVERY_TOKEN: ${RECOVERY_TOKEN}
+            DEBUG: false
+        depends_on:
+            - database
 
-  frontend:
-    image: aurillium/amethyst-frontend
-    environment:
-      BACKEND_URI: "http://backend:8000/"
-    ports:
-      - 8080:8000
-    volumes:
-      - ./devlog_assets:/var/www/html/devlog_assets
-    depends_on:
-      - backend
+    frontend:
+        image: aurillium/amethyst-frontend
+        environment:
+            BACKEND_URI: "http://backend:8000/"
+        ports:
+            - 8080:8000
+        volumes:
+            - ./devlog_assets:/var/www/html/devlog_assets
+        depends_on:
+            - backend
 
-  # Ensure this encrypts at rest
-  database:
-    image: postgres:16.4-alpine
-    shm_size: 128mb # This is different for swarm (check hub page)
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-    volumes:
-      - ./dbdata:/var/lib/postgresql/data
+    # Ensure this encrypts at rest
+    database:
+        image: postgres:16.4-alpine
+        shm_size: 128mb # This is different for swarm (check hub page)
+        environment:
+            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASS}
+        volumes:
+            - ./dbdata:/var/lib/postgresql/data
