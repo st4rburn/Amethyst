@@ -1,66 +1,31 @@
-import os
+import logging
 from typing import Annotated
 
-import models
-import rss
-from config import CONFIG
-from fastapi import Depends, FastAPI, Header, HTTPException, Response, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.engine import URL
+from sqlmodel import Session, select
+from starlette.middleware.sessions import SessionMiddleware
 
-# from sqlalchemy import create_engine
-from sqlmodel import Session, create_engine, select
+from . import auth, dependencies, models, rss
+from .config import CONFIG
+from .db import ENGINE
 
-app = FastAPI()
+app = FastAPI(root_path=CONFIG.backend_path)
 
+logging.warning((CONFIG.site_root.path))
+
+# Set up CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=[str(CONFIG.site_root)],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SessionMiddleware, secret_key=CONFIG.session_secret)
 
-url = URL.create(
-    drivername=CONFIG.db.driver,
-    username=CONFIG.db.username,
-    host=CONFIG.db.host,
-    database=CONFIG.db.database,
-    password=CONFIG.db.password,
-    # There is the caveat that you must specify the port if not using
-    # a UNIX socket, but the way to fix that would be to check if the
-    # host was a actual file, which right now is too much to justify.
-    port=CONFIG.db.port,
-)
-
-# Until OIDC is implemented, this will be used for
-# privileged requests. Afterwards can be for recovery
-RECOVERY_TOKEN: str | None = os.getenv("RECOVERY_TOKEN")
-
-ENGINE = create_engine(url, echo=True)
-models.db_setup(ENGINE)
-
-
-# This will eventually be replaced with OIDC to integrate with the
-# rest of it all, but just so I can post on the devlog for now
-def verify_token(authorization: Annotated[str, Header()] = None):
-    if RECOVERY_TOKEN is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="No auth methods allowed."
-        )
-    elif authorization is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="No token provided."
-        )
-    auth_parts: list[str] = authorization.split(" ")
-    if auth_parts[0].lower() != "bearer" or len(auth_parts) < 2:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid auth method."
-        )
-    if auth_parts[1] != RECOVERY_TOKEN:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token."
-        )
+# Include routers
+app.include_router(auth.router)
 
 
 @app.get("/")
@@ -72,13 +37,13 @@ def home():
 def get_devlog():
     with Session(ENGINE) as db:
         statement = select(models.DevlogEntry).order_by(
-            models.DevlogEntry.published.desc()
+            models.DevlogEntry.published.desc()  # pyright: ignore [reportAttributeAccessIssue]
         )
         results = db.exec(statement)
         return list(results)
 
 
-@app.post("/devlog", dependencies=[Depends(verify_token)])
+@app.post("/devlog", dependencies=[Depends(dependencies.verify_token)])
 def post_devlog(
     entry: models.DevlogEntry, authorization: Annotated[str | None, Header()] = None
 ):
@@ -95,7 +60,7 @@ def devrss():
         raise HTTPException(status_code=503, detail="RSS is not configured.")
     with Session(ENGINE) as db:
         statement = select(models.DevlogEntry).order_by(
-            models.DevlogEntry.published.desc()
+            models.DevlogEntry.published.desc()  # pyright: ignore [reportAttributeAccessIssue]
         )
         results = db.exec(statement)
         content = rss.generate_stream(
