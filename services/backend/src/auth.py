@@ -34,7 +34,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.get("/login/staff")
 async def staff_login(request: Request):
     redirect_uri = request.url_for("staff_auth")
-    return await oauth.staff.authorize_redirect(request, redirect_uri)
+    return await oauth.staff.authorize_redirect(request, redirect_uri, code_challenge_method="S256")
 
 
 @router.get("/auth/staff")
